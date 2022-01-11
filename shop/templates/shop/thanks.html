@@ -1,0 +1,32 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} ThankYou {% endblock %}
+
+{% block body %}
+
+<!--<h1>{{items_json}}</h1>-->
+<div class="jumbotron text-center">
+  <h1 class="display-3">Thank You!</h1>
+  <p style='font-size: 30px;' class="lead"><strong>Your order id is <span
+        style='color: red; font: bold;'>{{id}}</span></strong> Use it to track your order using our order tracker.</p>
+  <hr>
+  <p class="lead">
+    <a class="btn btn-primary btn-sm" href="/shop/tracker/" role="button">TRACK YOUR ORDER</a>
+  </p>
+  <p>
+    Having trouble? <a href="/shop/contact">Contact us</a>
+  </p>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+
+  {% if thanks %}
+  localStorage.clear();
+  {% endif %}
+
+</script>
+{% endblock %}

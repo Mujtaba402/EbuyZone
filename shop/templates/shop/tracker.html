@@ -1,0 +1,126 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} Tracker {% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <div class="col my-4">
+        <h1>EBuyZone Tracker - Track Your Orders</h1>
+        <form method="POST" action="#" id="trackerForm">{% csrf_token %}
+            <!-- cross side request forgery token to prevent attack from attacker -->
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="orderID">Order ID</label>
+                    <input type="text" class="form-control" id="orderID" name="orderID" placeholder="Order ID"
+                        required="required">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="inputEmail">Email</label>
+                    <input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Email">
+                </div>
+                <button type="submit" class="btn btn-primary">Track Order</button>
+            </div>
+        </form>
+
+    </div>
+    <div class="col my-4">
+        <h1>Your Order Status</h1>
+        <div class="my-4">
+            <ul class="list-group" id="items">
+                Enter your Order ID and Email and click Track Order to find details about your order.
+            </ul>
+        </div>
+
+        <h1>Your Order Details</h1>
+        <div class="my-4">
+            <ul class="list-group" id="detailitems">
+
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+
+    $('#trackerForm').submit(function (event) {
+        $('#items').empty();
+        var FormData = {
+            'orderID': $('input[name=orderID]').val(),
+            'inputEmail': $('input[name=inputEmail]').val(),
+            'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/shop/tracker/',
+            data: FormData,
+            encode: true
+        }).done(function (data) {
+            $('#detailitems').empty();
+            data = JSON.parse(data);
+
+
+
+            sum = 0;
+            totalprice=0;
+            if (data['status'] == 'success') {
+                updates = data['updates'];
+                for (let i = 0; i < updates.length; i++) {
+                    let text = updates[i]['text'];
+                    let time = updates[i]['time'];
+
+                    myStr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${text}
+                    <span class="badge badge-primary badge-pill">${time}</span>
+                </li>`;
+                    $('#items').append(myStr);
+                }
+                //fill in the order details
+                cart = JSON.parse(data['itemsJson']);
+                console.log(cart);
+                for (var item in cart) {
+                    let qty = cart[item][0];
+                    let name = cart[item][1];
+                    let price = cart[item][2];
+                    sum = sum + qty;
+                    totalprice = totalprice + qty*price;
+                    myStr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${name}
+                    <span class="badge badge-primary badge-pill">${qty}</span>
+                </li>`;
+                    $('#detailitems').append(myStr);
+                }
+
+                myStr1 = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    <h4>TOTAL PRODUCTS</h4>
+                    <span class="badge badge-primary badge-pill"><b id="sum">${sum}</b></span>
+                </li>`;
+                
+                    myPr1 = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    <h4>TOTAL PRICE</h4>
+                    <span class="badge badge-primary badge-pill">Rs.<b id="price">${totalprice}</b></span>
+                </li>`;
+                    $('#detailitems').append(myStr1);
+                    $('#detailitems').append(myPr1);
+            }
+            else {
+                myStr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    SORRY, Make sure your id and email is correct
+                </li>`;
+                $('#items').append(myStr);
+                $('#detailitems').append(myStr);
+            }
+
+        });
+        event.preventDefault();//Description: If this method is called, the default action of the event will not be triggered.
+    });
+
+
+</script>
+
+{% endblock %}
